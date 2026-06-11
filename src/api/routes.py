@@ -5,18 +5,48 @@ from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
+from flask_bcrypt import Bcrypt  # 1. Importamos la librería de cifrado
 
 api = Blueprint('api', __name__)
-
-# Allow CORS requests to this API
 CORS(api)
 
+# Inicializamos Bcrypt pasándole la app de flask indirectamente o usándolo de forma directa:
+bcrypt = Bcrypt()
 
-@api.route('/hello', methods=['POST', 'GET'])
-def handle_hello():
 
-    response_body = {
-        "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
-    }
+@api.route('/signup', methods=['POST'])
+def handle_signup():
+    # 2. Recibimos los datos que nos envía React (en formato JSON)
+    body = request.get_json()
 
-    return jsonify(response_body), 200
+    # Validación: Nos aseguramos de que envíen todos los campos obligatorios
+    if body is None:
+        return jsonify({"msg": "Body cannot be empty"}), 400
+    if "email" not in body or "password" not in body or "username" not in body:
+        return jsonify({"msg": "Email, password and username are required"}), 400
+
+    # 3. Verificar si el usuario o el email ya existen en la base de datos
+    user_exists = User.query.filter_by(email=body["email"]).first()
+    username_exists = User.query.filter_by(username=body["username"]).first()
+
+    if user_exists or username_exists:
+        return jsonify({"msg": "El usuario o el email ya están registrados"}), 400
+
+    # 4. ¡CIFRAMOS LA CONTRASEÑA!
+    # Generamos un 'hash' seguro a partir del texto plano que envió el usuario
+    hashed_password = bcrypt.generate_password_hash(
+        body["password"]).decode('utf-8')
+
+    # 5. Creamos el nuevo usuario con la contraseña cifrada
+    new_user = User(
+        username=body["username"],
+        email=body["email"],
+        password=hashed_password,  # Guardamos el hash, no la contraseña real
+        is_active=True
+    )
+
+    # 6. Guardamos en la base de datos
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({"msg": "¡Entrenador registrado con éxito!"}), 201
