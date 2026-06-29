@@ -1,19 +1,17 @@
-import React, { useState, useContext } from "react";
-import { Context } from "../store/appContext";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const Login = () => {
-    const { store, actions } = useContext(Context);
+    // 🛑 Contexto desactivado temporalmente hasta que configuremos el Provider
+    // const { store, actions } = useContext(Context); 
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Aquí conectarás luego con tu action de Flux para loguear al entrenador
-        console.log("Iniciando sesión con:", email, password);
-
-        // Ejemplo de flujo: si todo va bien, redirige a la Home
+        console.log("Iniciando sesión del entrenador con:", email, password);
         // navigate("/");
     };
 
