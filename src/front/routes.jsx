@@ -10,6 +10,7 @@ import { Home } from "./pages/Home";
 import { Single } from "./pages/Single";
 import { Demo } from "./pages/Demo";
 import { Signup } from "./pages/signup.jsx";
+import { Login } from "./pages/login.jsx";
 
 export const router = createBrowserRouter(
     createRoutesFromElements(
