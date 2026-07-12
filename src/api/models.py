@@ -28,3 +28,19 @@ class User(db.Model):
             "is_active": self.is_active
             # Nunca serializar el password por seguridad
         }
+
+
+class Favorite(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    pokemon_name = db.Column(db.String(120), nullable=False)
+
+    # Esto crea una relación para que sea fácil acceder desde el usuario a sus favoritos
+    user = db.relationship('User', backref='favorites')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "pokemon_name": self.pokemon_name
+        }

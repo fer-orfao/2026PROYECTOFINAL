@@ -3,16 +3,39 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 """
 from flask_jwt_extended import create_access_token  # Importa esto arriba junto a los otros imports
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User
+from api.models import db, User, Favorite  
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt  # 1. Importamos la librería de cifrado
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Blueprint('api', __name__)
 CORS(api)
 
 # Inicializamos Bcrypt pasándole la app de flask indirectamente o usándolo de forma directa:
 bcrypt = Bcrypt()
+
+
+@api.route('/favorite', methods=['POST'])
+# Protegemos la ruta para que solo usuarios logueados puedan guardar favoritos
+@jwt_required()
+def add_favorite():
+    body = request.get_json()
+    email = get_jwt_identity()  # Obtenemos el email del usuario logueado desde el token
+
+    # Buscamos al usuario en la DB
+    user = User.query.filter_by(email=email).first()
+
+    # Creamos el nuevo favorito
+    new_favorite = Favorite(
+        user_id=user.id,
+        pokemon_name=body["pokemon_name"]
+    )
+
+    db.session.add(new_favorite)
+    db.session.commit()
+
+    return jsonify({"msg": "Pokémon añadido a favoritos"}), 201
 
 
 @api.route('/login', methods=['POST'])

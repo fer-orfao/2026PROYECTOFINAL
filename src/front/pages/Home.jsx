@@ -1,6 +1,7 @@
 import React, { useEffect } from "react"
-import rigoImageUrl from "../assets/img/rigo-baby.jpg";
+//import rigoImageUrl from "../assets/img/rigo-baby.jpg";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { Link } from "react-router-dom";
 
 export const Home = () => {
 	const { store, dispatch } = useGlobalReducer();
@@ -24,15 +25,28 @@ export const Home = () => {
 		<div className="text-center mt-5">
 			<h1 className="display-4">Mi Pokédex</h1>
 			<div className="row">
-				{store.pokemons.map((pokemon, index) => (
-					<div key={index} className="col-md-3">
-						<div className="card m-2">
-							<div className="card-body">
-								<h5>{pokemon.name.toUpperCase()}</h5>
+				{store.pokemons.map((pokemon, index) => {
+					// El ID es el número que sale al final de la URL que nos da la API
+					const id = index + 1;
+
+					return (
+						<div key={id} className="col-md-3 mb-4">
+							<div className="card text-center shadow-sm">
+								<img
+									src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`}
+									className="card-img-top w-50 mx-auto"
+									alt={pokemon.name}
+								/>
+								<div className="card-body">
+									<h5 className="card-title text-capitalize">{pokemon.name}</h5>
+									<Link to={`/single/${id}`} className="btn btn-primary">
+										Ver Detalles
+									</Link>
+								</div>
 							</div>
 						</div>
-					</div>
-				))}
+					);
+				})}
 			</div>
 		</div>
 	);
