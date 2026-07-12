@@ -1,18 +1,53 @@
 import React, { useState } from "react";
+// Importamos el hook que tu plantilla ya tiene preparado para el estado global
+import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
 
 export const Login = () => {
-    // 🛑 Contexto desactivado temporalmente hasta que configuremos el Provider
-    // const { store, actions } = useContext(Context); 
+    // Usamos el hook en lugar de useContext(Context)
+    const { store, dispatch } = useGlobalReducer();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Iniciando sesión del entrenador con:", email, password);
-        // navigate("/");
+        setError(null); // Asegúrate de tener este estado definido como en signup
+
+        const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+        try {
+            const response = await fetch(`${backendUrl}/api/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.msg || "Error al iniciar sesión");
+            }
+
+            // ¡IMPORTANTE! Guardamos el token en el navegador
+            localStorage.setItem("token", data.access_token);
+
+            alert("¡Bienvenido, Entrenador!");
+
+            // Redirigimos a la home
+            navigate("/");
+
+        } catch (err) {
+            setError(err.message);
+            alert(err.message); // Para que veas el error si falla
+        }
     };
 
     return (

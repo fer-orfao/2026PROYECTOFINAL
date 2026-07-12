@@ -14,7 +14,7 @@ export const Signup = () => {
 
         // Obtenemos la URL de tu API guardada en el .env de forma automática
         const backendUrl = import.meta.env.VITE_BACKEND_URL;
-        console.log("La URL que está leyendo React es:", backendUrl); // <-- AÑADE ESTA LÍNEA
+        console.log("La URL que está leyendo React es:", backendUrl); 
 
         try {
             const response = await fetch(`${backendUrl}/api/signup`, {

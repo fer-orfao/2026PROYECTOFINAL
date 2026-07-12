@@ -1,6 +1,7 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
+from flask_jwt_extended import create_access_token  # Importa esto arriba junto a los otros imports
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
@@ -12,6 +13,26 @@ CORS(api)
 
 # Inicializamos Bcrypt pasándole la app de flask indirectamente o usándolo de forma directa:
 bcrypt = Bcrypt()
+
+
+@api.route('/login', methods=['POST'])
+def handle_login():
+    body = request.get_json()
+
+    if "email" not in body or "password" not in body:
+        return jsonify({"msg": "Email y contraseña son obligatorios"}), 400
+
+    # 1. Buscamos el usuario por email
+    user = User.query.filter_by(email=body["email"]).first()
+
+    # 2. Si no existe o la contraseña no coincide
+    if user is None or not bcrypt.check_password_hash(user.password, body["password"]):
+        return jsonify({"msg": "Email o contraseña incorrectos"}), 401
+
+    # 3. Creamos el token de acceso
+    access_token = create_access_token(identity=user.email)
+
+    return jsonify({"access_token": access_token, "msg": "Login exitoso"}), 200
 
 
 @api.route('/signup', methods=['POST'])
