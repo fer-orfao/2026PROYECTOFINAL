@@ -13,6 +13,10 @@ from api.commands import setup_commands
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS  # <-- AÑADE ESTA LÍNEA
 
+
+
+
+
 # from models import Person
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
@@ -22,6 +26,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 app.config["JWT_SECRET_KEY"] = "super-secret-key-pokemon"
 app.url_map.strict_slashes = False
+
 
 # database condiguration
 db_url = os.getenv("DATABASE_URL")
@@ -79,3 +84,6 @@ if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3001))
     app.run(host='0.0.0.0', port=PORT, debug=True)
 4
+
+
+

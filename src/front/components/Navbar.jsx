@@ -17,20 +17,26 @@ export const Navbar = () => {
 				<Link to="/">
 					<span className="navbar-brand mb-0 h1 text-primary">Aplicación Pokédex</span>
 				</Link>
+
+
 				<div className="ml-auto">
 					{token ? (
-						// Si hay token, mostramos cerrar sesión
-						<button className="btn btn-danger" onClick={handleLogout}>
-							Cerrar Sesión
-						</button>
+						// Si SÍ hay token, mostramos "Mis Favoritos" y "Cerrar Sesión"
+						<>
+							<Link to="/favorites" className="btn btn-outline-primary me-2">Mis Favoritos</Link>
+							<button className="btn btn-danger" onClick={handleLogout}>
+								Cerrar Sesión
+							</button>
+						</>
 					) : (
-						// Si NO hay token, mostramos Login y Registro
+						// Si NO hay token, mostramos solo "Login" y "Registro"
 						<>
 							<Link to="/login" className="btn btn-primary me-2">Login</Link>
 							<Link to="/signup" className="btn btn-success">Registro</Link>
 						</>
 					)}
 				</div>
+
 			</div>
 		</nav>
 	);

@@ -3,7 +3,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 """
 from flask_jwt_extended import create_access_token  # Importa esto arriba junto a los otros imports
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Favorite  
+from api.models import db, User, Favorite
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt  # 1. Importamos la librería de cifrado
@@ -14,6 +14,25 @@ CORS(api)
 
 # Inicializamos Bcrypt pasándole la app de flask indirectamente o usándolo de forma directa:
 bcrypt = Bcrypt()
+
+# Ruta para cambiar de color y eliminar favoritos:
+
+
+@api.route('/favorite/<string:pokemon_name>', methods=['DELETE'])
+@jwt_required()
+def delete_favorite(pokemon_name):
+    email = get_jwt_identity()
+    user = User.query.filter_by(email=email).first()
+
+    # Buscamos el favorito específico de ese usuario y ese pokemon
+    fav = Favorite.query.filter_by(
+        user_id=user.id, pokemon_name=pokemon_name).first()
+
+    if fav:
+        db.session.delete(fav)
+        db.session.commit()
+        return jsonify({"msg": "Eliminado de favoritos"}), 200
+    return jsonify({"msg": "No encontrado"}), 404
 
 
 @api.route('/favorite', methods=['POST'])
@@ -94,3 +113,13 @@ def handle_signup():
     db.session.commit()
 
     return jsonify({"msg": "¡Entrenador registrado con éxito!"}), 201
+
+
+@api.route('/favorites', methods=['GET'])
+@jwt_required()
+def get_user_favorites():
+    email = get_jwt_identity()
+    user = User.query.filter_by(email=email).first()
+    # Obtenemos los nombres de los pokemones favoritos de este usuario
+    favorites = [fav.pokemon_name for fav in user.favorites]
+    return jsonify(favorites), 200
