@@ -1,125 +1,93 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-from flask_jwt_extended import create_access_token  # Importa esto arriba junto a los otros imports
-from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Favorite
-from api.utils import generate_sitemap, APIException
-from flask_cors import CORS
-from flask_bcrypt import Bcrypt  # 1. Importamos la librería de cifrado
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import Blueprint, request, jsonify
+from api.models import db, Favorite, User
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_bcrypt import Bcrypt
 
-api = Blueprint('api', __name__)
-CORS(api)
-
-# Inicializamos Bcrypt pasándole la app de flask indirectamente o usándolo de forma directa:
 bcrypt = Bcrypt()
+api = Blueprint('api', __name__)
 
-# Ruta para cambiar de color y eliminar favoritos:
-
-
-@api.route('/favorite/<string:pokemon_name>', methods=['DELETE'])
-@jwt_required()
-def delete_favorite(pokemon_name):
-    email = get_jwt_identity()
-    user = User.query.filter_by(email=email).first()
-
-    # Buscamos el favorito específico de ese usuario y ese pokemon
-    fav = Favorite.query.filter_by(
-        user_id=user.id, pokemon_name=pokemon_name).first()
-
-    if fav:
-        db.session.delete(fav)
-        db.session.commit()
-        return jsonify({"msg": "Eliminado de favoritos"}), 200
-    return jsonify({"msg": "No encontrado"}), 404
+# RUTA DE REGISTRO
 
 
-@api.route('/favorite', methods=['POST'])
-# Protegemos la ruta para que solo usuarios logueados puedan guardar favoritos
-@jwt_required()
-def add_favorite():
+@api.route("/signup", methods=["POST"])
+def signup():
     body = request.get_json()
-    email = get_jwt_identity()  # Obtenemos el email del usuario logueado desde el token
+    username = body.get("username")
+    email = body.get("email")
+    password = body.get("password")
 
-    # Buscamos al usuario en la DB
-    user = User.query.filter_by(email=email).first()
+    if not email or not password or not username:
+        return jsonify({"msg": "Faltan datos obligatorios"}), 400
 
-    # Creamos el nuevo favorito
-    new_favorite = Favorite(
-        user_id=user.id,
-        pokemon_name=body["pokemon_name"]
-    )
+    # Comprobar si el usuario ya existe
+    user_exists = User.query.filter_by(email=email).first()
+    if user_exists:
+        return jsonify({"msg": "El usuario ya existe"}), 400
 
-    db.session.add(new_favorite)
-    db.session.commit()
+    # Cifrar la contraseña antes de guardarla
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
-    return jsonify({"msg": "Pokémon añadido a favoritos"}), 201
-
-
-@api.route('/login', methods=['POST'])
-def handle_login():
-    body = request.get_json()
-
-    if "email" not in body or "password" not in body:
-        return jsonify({"msg": "Email y contraseña son obligatorios"}), 400
-
-    # 1. Buscamos el usuario por email
-    user = User.query.filter_by(email=body["email"]).first()
-
-    # 2. Si no existe o la contraseña no coincide
-    if user is None or not bcrypt.check_password_hash(user.password, body["password"]):
-        return jsonify({"msg": "Email o contraseña incorrectos"}), 401
-
-    # 3. Creamos el token de acceso
-    access_token = create_access_token(identity=user.email)
-
-    return jsonify({"access_token": access_token, "msg": "Login exitoso"}), 200
-
-
-@api.route('/signup', methods=['POST'])
-def handle_signup():
-    # 2. Recibimos los datos que nos envía React (en formato JSON)
-    body = request.get_json()
-
-    # Validación: Nos aseguramos de que envíen todos los campos obligatorios
-    if body is None:
-        return jsonify({"msg": "Body cannot be empty"}), 400
-    if "email" not in body or "password" not in body or "username" not in body:
-        return jsonify({"msg": "Email, password and username are required"}), 400
-
-    # 3. Verificar si el usuario o el email ya existen en la base de datos
-    user_exists = User.query.filter_by(email=body["email"]).first()
-    username_exists = User.query.filter_by(username=body["username"]).first()
-
-    if user_exists or username_exists:
-        return jsonify({"msg": "El usuario o el email ya están registrados"}), 400
-
-    # 4. ¡CIFRAMOS LA CONTRASEÑA!
-    # Generamos un 'hash' seguro a partir del texto plano que envió el usuario
-    hashed_password = bcrypt.generate_password_hash(
-        body["password"]).decode('utf-8')
-
-    # 5. Creamos el nuevo usuario con la contraseña cifrada
     new_user = User(
-        username=body["username"],
-        email=body["email"],
-        password=hashed_password,  # Guardamos el hash, no la contraseña real
+        username=username,
+        email=email,
+        password=hashed_password,
         is_active=True
     )
-
-    # 6. Guardamos en la base de datos
     db.session.add(new_user)
     db.session.commit()
+    return jsonify({"msg": "Usuario registrado con éxito"}), 200
 
-    return jsonify({"msg": "¡Entrenador registrado con éxito!"}), 201
+# RUTA DE LOGIN
 
 
-@api.route('/favorites', methods=['GET'])
-@jwt_required()
-def get_user_favorites():
-    email = get_jwt_identity()
+@api.route("/login", methods=["POST"])
+def login():
+    body = request.get_json()
+    email = body.get("email")
+    password = body.get("password")
+
     user = User.query.filter_by(email=email).first()
-    # Obtenemos los nombres de los pokemones favoritos de este usuario
-    favorites = [fav.pokemon_name for fav in user.favorites]
-    return jsonify(favorites), 200
+
+    # Verificamos la contraseña cifrada
+    if user and bcrypt.check_password_hash(user.password, password):
+        access_token = create_access_token(identity=str(user.id))
+        return jsonify({"access_token": access_token}), 200
+
+    return jsonify({"msg": "Email o contraseña incorrectos"}), 401
+
+
+@api.route("/favorite/<string:pokemon_name>", methods=["POST", "DELETE"])
+@jwt_required()
+def handle_favorite(pokemon_name):
+    user_id = get_jwt_identity()
+
+    if request.method == "POST":
+        # Lógica para añadir favorito
+        new_fav = Favorite(user_id=user_id, pokemon_name=pokemon_name)
+        db.session.add(new_fav)
+        db.session.commit()
+        return jsonify({"msg": "Favorito añadido"}), 200
+
+    if request.method == "DELETE":
+        # Lógica para eliminar favorito
+        fav = Favorite.query.filter_by(
+            user_id=user_id, pokemon_name=pokemon_name).first()
+        if fav:
+            db.session.delete(fav)
+            db.session.commit()
+            return jsonify({"msg": "Favorito eliminado"}), 200
+        return jsonify({"msg": "No encontrado"}), 404
+
+
+# RUTA PARA OBTENER LOS FAVORITOS DEL USUARIO
+@api.route("/favorites", methods=["GET"])
+@jwt_required()
+def get_favorites():
+    user_id = get_jwt_identity()
+    favorites = Favorite.query.filter_by(user_id=user_id).all()
+    # Devolvemos una lista con los nombres de los pokémon
+    list_favorites = [f.pokemon_name for f in favorites]
+    return jsonify(list_favorites), 200

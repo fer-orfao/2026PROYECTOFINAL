@@ -1,75 +1,91 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
+import { useParams, useNavigate } from "react-router-dom";
 
 export const Single = () => {
-  const { theId } = useParams();
-  const [pokemon, setPokemon] = useState(null);
-  const [isFavorite, setIsFavorite] = useState(false); // 1. Nuevo estado para el botón
+  const navigate = useNavigate();
+  const { theId } = useParams(); // Este es el nombre o ID que viene en la URL
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [pokemon, setPokemon] = useState(null); // Estado para guardar los datos del Pokémon
 
+  // 1. Cargar datos del Pokémon desde PokeAPI
   useEffect(() => {
     fetch(`https://pokeapi.co/api/v2/pokemon/${theId}`)
       .then((res) => res.json())
-      .then((data) => {
-        setPokemon(data);
-        // 2. Aquí llamarías a una función para verificar si ya es favorito
-        // Por ahora, empezaremos con el toggle manual
-      })
-      .catch((err) => console.error(err));
+      .then((data) => setPokemon(data))
+      .catch((err) => console.error("Error cargando Pokémon:", err));
   }, [theId]);
 
-  // 3. Función única para alternar entre POST y DELETE
+  // 2. Comprobar si ya es favorito
+  useEffect(() => {
+    const checkStatus = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/favorites`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          // Comparamos usando el nombre que viene de la PokeAPI
+          if (pokemon && data.includes(pokemon.name)) setIsFavorite(true);
+        }
+      } catch (err) {
+        console.error("Error comprobando favoritos:", err);
+      }
+    };
+    checkStatus();
+  }, [theId, pokemon]); // Se ejecuta cuando cambia el Pokémon
+
+  // 3. Lógica para añadir/eliminar favorito
   const toggleFavorite = async () => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Debes iniciar sesión");
+
+    if (!token || token === "null" || token === "undefined") {
+      alert("Inicia sesión para gestionar favoritos.");
+      navigate("/login");
       return;
     }
 
-    // Si ya es favorito, eliminamos (DELETE). Si no, añadimos (POST).
-    const method = isFavorite ? "DELETE" : "POST";
-    const url = isFavorite
-      ? `${import.meta.env.VITE_BACKEND_URL}/api/favorite/${pokemon.name}`
-      : `${import.meta.env.VITE_BACKEND_URL}/api/favorite`;
-
     try {
-      const response = await fetch(url, {
-        method: method,
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/favorite/${pokemon.name}`, {
+        method: isFavorite ? "DELETE" : "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
-        },
-        body: !isFavorite ? JSON.stringify({ pokemon_name: pokemon.name }) : null
+        }
       });
 
       if (response.ok) {
-        setIsFavorite(!isFavorite); // 4. AQUÍ ES DONDE EL BOTÓN CAMBIA DE COLOR/ESTADO
-        alert(isFavorite ? "Eliminado de favoritos" : "¡Añadido a favoritos!");
-      } else if (response.status === 401) {
-        alert("Sesión caducada, inicia sesión de nuevo.");
+        setIsFavorite(!isFavorite);
       }
-    } catch (error) {
-      console.error("Error:", error);
+    } catch (err) {
+      console.error("Error al gestionar favorito:", err);
     }
   };
 
-  if (!pokemon) return <div className="text-center mt-5">Cargando...</div>;
-
   return (
-    <div className="text-center mt-5">
-      <h1 className="text-capitalize">{pokemon.name}</h1>
-      <img src={pokemon.sprites.front_default} alt={pokemon.name} style={{ width: "200px" }} />
-
-      {/* 5. El botón ahora cambia dinámicamente de clase y texto */}
-      <button
-        className={`btn ${isFavorite ? "btn-danger" : "btn-warning"} mx-2`}
-        onClick={toggleFavorite}
-      >
-        {isFavorite ? "❤️ Eliminar de Favoritos" : "🤍 Añadir a Favoritos"}
-      </button>
-
-      <Link to="/" className="btn btn-primary">Volver</Link>
+    <div className="container text-center mt-5">
+      {pokemon ? (
+        <>
+          <img 
+            src={pokemon.sprites.other["official-artwork"].front_default} 
+            alt={pokemon.name} 
+            style={{ width: "300px" }} 
+          />
+          <h1 className="mt-3">{pokemon.name.toUpperCase()}</h1>
+          <p>Altura: {pokemon.height} | Peso: {pokemon.weight}</p>
+          
+          <button
+            onClick={toggleFavorite}
+            className={`btn ${isFavorite ? "btn-danger" : "btn-primary"} mt-3`}
+          >
+            {isFavorite ? "❤️ Eliminar de Favoritos" : "🤍 Añadir a Favoritos"}
+          </button>
+        </>
+      ) : (
+        <h2>Cargando información del Pokémon...</h2>
+      )}
     </div>
   );
-
 };

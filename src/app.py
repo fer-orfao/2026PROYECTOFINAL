@@ -11,7 +11,8 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 from flask_jwt_extended import JWTManager
-from flask_cors import CORS  # <-- AÑADE ESTA LÍNEA
+from flask_cors import CORS  
+from datetime import timedelta
 
 
 
@@ -26,6 +27,10 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 app.config["JWT_SECRET_KEY"] = "super-secret-key-pokemon"
 app.url_map.strict_slashes = False
+
+# Configuracion del tiempo de la sesión 
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
+jwt = JWTManager(app)
 
 
 # database condiguration
@@ -50,6 +55,9 @@ setup_commands(app)
 
 # Add all endpoints form the API with a "api" prefix
 app.register_blueprint(api, url_prefix='/api')
+
+
+
 
 # Handle/serialize errors like a JSON object
 

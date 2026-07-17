@@ -31,6 +31,7 @@ export const Login = () => {
             });
 
             const data = await response.json();
+            console.log("Datos recibidos del servidor:", data); 
 
             if (!response.ok) {
                 throw new Error(data.msg || "Error al iniciar sesión");
