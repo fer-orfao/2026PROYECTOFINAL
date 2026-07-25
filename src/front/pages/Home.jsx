@@ -4,6 +4,10 @@ import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { Link } from "react-router-dom";
 
 export const Home = () => {
+
+	const initialState = {
+		pokemons: [] // ¡Esto es clave!
+	};
 	const { store, dispatch } = useGlobalReducer();
 
 	const loadPokemons = async () => {

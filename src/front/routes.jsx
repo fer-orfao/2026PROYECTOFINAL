@@ -12,12 +12,14 @@ export const router = createBrowserRouter(
   createRoutesFromElements(
     // El Layout envuelve a todas las rutas hijas
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>}>
-      <Route index element={<Home />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/home" element={<Home />} />
       <Route path="login" element={<Login />} />
       <Route path="signup" element={<Signup />} />
       <Route path="single/:theId" element={<Single />} />
       <Route path="favorites" element={<Favorites />} />
       <Route path="demo" element={<Demo />} />
+
     </Route>
   )
 );
