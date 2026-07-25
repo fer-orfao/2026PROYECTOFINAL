@@ -91,3 +91,32 @@ def get_favorites():
     # Devolvemos una lista con los nombres de los pokémon
     list_favorites = [f.pokemon_name for f in favorites]
     return jsonify(list_favorites), 200
+
+# RUTA PARA ELIMINAR EL USUARIO
+
+
+@api.route("/user", methods=["DELETE"])
+@jwt_required()
+def delete_user():
+    try:
+        current_user_identity = get_jwt_identity()
+
+        # Buscamos al usuario por ID o por Email según el token
+        user = User.query.get(current_user_identity)
+        if not user:
+            user = User.query.filter_by(email=current_user_identity).first()
+
+        if not user:
+            return jsonify({"msg": "Usuario no encontrado"}), 404
+
+        # Borramos los favoritos asociados para que no bloqueen el borrado
+        Favorite.query.filter_by(user_id=user.id).delete()
+
+        db.session.delete(user)
+        db.session.commit()
+
+        return jsonify({"msg": "Usuario eliminado exitosamente"}), 200
+    except Exception as e:
+        db.session.rollback()
+        print("ERROR CRÍTICO AL BORRAR USUARIO:", str(e))
+        return jsonify({"msg": "Error interno del servidor", "error": str(e)}), 500
