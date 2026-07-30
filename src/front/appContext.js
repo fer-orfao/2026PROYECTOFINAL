@@ -1,6 +1,6 @@
 import React, { createContext, useReducer } from "react";
 import storeReducer, { initialStore } from "./store.js";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+
 
 
 export const Context = createContext(null);
