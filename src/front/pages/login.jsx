@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-// Importamos el hook que tu plantilla ya tiene preparado para el estado global
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { useNavigate } from "react-router-dom";
 
 export const Login = () => {
-    // Usamos el hook en lugar de useContext(Context)
     const { store, dispatch } = useGlobalReducer();
 
     const [email, setEmail] = useState("");
@@ -14,7 +12,7 @@ export const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(null); // Asegúrate de tener este estado definido como en signup
+        setError(null); 
 
         const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -37,17 +35,16 @@ export const Login = () => {
                 throw new Error(data.msg || "Error al iniciar sesión");
             }
 
-            // ¡IMPORTANTE! Guardamos el token en el navegador
+
             localStorage.setItem("token", data.access_token);
 
             alert("¡Bienvenido, Entrenador!");
 
-            // Redirigimos a la home
             navigate("/");
 
         } catch (err) {
             setError(err.message);
-            alert(err.message); // Para que veas el error si falla
+            alert(err.message); // Para ver el error si falla
         }
     };
 
@@ -75,8 +72,8 @@ export const Login = () => {
                         required
                     />
                 </div>
-                <button type="submit" className="btn btn-primary w-100">
-                    Entrar a la Pokédex
+                <button type="submit" className="btn btn-success w-100">
+                    Entrar a tu Pokédex
                 </button>
             </form>
         </div>

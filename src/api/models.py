@@ -15,7 +15,7 @@ class User(db.Model):
     # Aumentamos el tamaño para la contraseña cifrada
     password: Mapped[str] = mapped_column(String(250), nullable=False)
     is_active: Mapped[bool] = mapped_column(
-        Boolean(), default=True, nullable=False)  # Le ponemos True por defecto
+        Boolean(), default=True, nullable=False)  
 
     def __repr__(self):
         return f'<Entrenador {self.username}>'
@@ -26,7 +26,6 @@ class User(db.Model):
             "username": self.username,
             "email": self.email,
             "is_active": self.is_active
-            # Nunca serializar el password por seguridad
         }
 
 
@@ -35,7 +34,7 @@ class Favorite(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     pokemon_name = db.Column(db.String(120), nullable=False)
 
-    # Esto crea una relación para que sea fácil acceder desde el usuario a sus favoritos
+
     user = db.relationship('User', backref='favorites')
 
     def serialize(self):

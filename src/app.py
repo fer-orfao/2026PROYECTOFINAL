@@ -28,7 +28,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 app.config["JWT_SECRET_KEY"] = "super-secret-key-pokemon"
 app.url_map.strict_slashes = False
 
-# Configuracion del tiempo de la sesión 
+# Configuracion del tiempo de la sesión, lo alargo
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
 jwt = JWTManager(app)
 

@@ -1,7 +1,7 @@
 export const initialStore = () => {
   return {
     message: null,
-    pokemons: [], // <--- Añadido
+    pokemons: [], 
     todos: [
       {
         id: 1,
@@ -19,7 +19,7 @@ export const initialStore = () => {
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
-    case "set_pokemons": // <--- Añadido
+    case "set_pokemons":
       return {
         ...store,
         pokemons: action.payload,

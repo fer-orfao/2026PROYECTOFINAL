@@ -12,7 +12,7 @@ export const Signup = () => {
         e.preventDefault();
         setError(null);
 
-        // Obtenemos la URL de tu API guardada en el .env de forma automática
+
         const backendUrl = import.meta.env.VITE_BACKEND_URL;
         console.log("La URL que está leyendo React es:", backendUrl); 
 
@@ -35,7 +35,7 @@ export const Signup = () => {
                 throw new Error(data.msg || "Error al registrar al entrenador");
             }
 
-            // Si todo sale bien, lo redirigimos al login para que entre
+
             alert("¡Entrenador registrado con éxito! Ahora puedes iniciar sesión.");
             navigate("/login");
 
@@ -81,7 +81,7 @@ export const Signup = () => {
                         required
                     />
                 </div>
-                <button type="submit" className="btn btn-primary w-100">Registrar Cuenta Pokédex</button>
+                <button type="submit" className="btn btn-success w-100">Registrar Cuenta Pokédex</button>
             </form>
         </div>
     );

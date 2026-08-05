@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Importamos useNavigate
+import { Link, useNavigate } from "react-router-dom"; 
 
 const PokemonCard = ({ name }) => {
   const [pokemonData, setPokemonData] = useState(null);
@@ -10,6 +10,8 @@ const PokemonCard = ({ name }) => {
       .then((data) => setPokemonData(data))
       .catch((err) => console.error("Error cargando imagen:", err));
   }, [name]);
+
+
 
   if (!pokemonData) return <div className="m-2">Cargando...</div>;
 
@@ -28,9 +30,11 @@ const PokemonCard = ({ name }) => {
   );
 };
 
+
+
 export const Favorites = () => {
   const [favorites, setFavorites] = useState([]);
-  const navigate = useNavigate(); // Inicializamos navigate
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -60,9 +64,12 @@ export const Favorites = () => {
     fetchFavorites();
   }, []);
 
-  // Función para eliminar la cuenta
+
+
+
+  // Eliminar la cuenta
   const handleDeleteAccount = async () => {
-    if (!window.confirm("¿Estás segura de que quieres eliminar tu cuenta de forma permanente? Perderás todos tus favoritos.")) return;
+    if (!window.confirm("¿Estás segurx de que quieres eliminar tu cuenta de forma permanente? Perderás todos tus favoritos.")) return;
 
     const token = localStorage.getItem("token");
     try {
@@ -74,7 +81,7 @@ export const Favorites = () => {
       if (response.ok) {
         localStorage.removeItem("token");
         alert("Tu cuenta ha sido eliminada. ¡Esperamos verte pronto!");
-        navigate("/"); // Llevamos al usuario a la home
+        navigate("/"); // Lo manda a home
       } else {
         alert("Hubo un error al eliminar la cuenta.");
       }
@@ -99,10 +106,11 @@ export const Favorites = () => {
         )}
       </div>
 
-      {/* Separador y botón de zona de peligro al final */}
+
+      {/* Botón de eliminar la cuenta */}
       <hr className="mt-5" />
       <div className="mt-4">
-        <p className="text-muted small">Zona de peligro</p>
+        <p className="text-muted small">Zona de peligro, ve con cuidado.</p>
         <button onClick={handleDeleteAccount} className="btn btn-outline-danger btn-sm">
           ¿Quieres eliminar tu cuenta?
         </button>

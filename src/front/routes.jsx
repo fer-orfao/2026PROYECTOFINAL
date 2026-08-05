@@ -1,6 +1,6 @@
 // src/front/routes.jsx
 import { createBrowserRouter, createRoutesFromElements, Route } from "react-router-dom";
-import { Layout } from "./pages/Layout"; // Verifica que esta ruta sea correcta
+import { Layout } from "./pages/Layout"; 
 import { Home } from "./pages/Home";
 import { Single } from "./pages/Single";
 import { Favorites } from "./pages/Favorites";
@@ -10,7 +10,7 @@ import { Demo } from "./pages/Demo";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
-    // El Layout envuelve a todas las rutas hijas
+    // (El Layout envuelve a todas las rutas hijas)
     <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>}>
       <Route path="/" element={<Home />} />
       <Route path="/home" element={<Home />} />

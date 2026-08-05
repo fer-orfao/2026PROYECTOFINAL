@@ -3,11 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 
 export const Single = () => {
   const navigate = useNavigate();
-  const { theId } = useParams(); // Este es el nombre o ID que viene en la URL
+  const { theId } = useParams(); 
   const [isFavorite, setIsFavorite] = useState(false);
-  const [pokemon, setPokemon] = useState(null); // Estado para guardar los datos del Pokémon
+  const [pokemon, setPokemon] = useState(null); 
 
-  // 1. Cargar datos del Pokémon desde PokeAPI
+  // Cargo datos del Pokémon desde PokeAPI
   useEffect(() => {
     fetch(`https://pokeapi.co/api/v2/pokemon/${theId}`)
       .then((res) => res.json())
@@ -15,7 +15,7 @@ export const Single = () => {
       .catch((err) => console.error("Error cargando Pokémon:", err));
   }, [theId]);
 
-  // 2. Comprobar si ya es favorito
+  // Compruebo si ya es favorito
   useEffect(() => {
     const checkStatus = async () => {
       const token = localStorage.getItem("token");
@@ -37,7 +37,7 @@ export const Single = () => {
     checkStatus();
   }, [theId, pokemon]); // Se ejecuta cuando cambia el Pokémon
 
-  // 3. Lógica para añadir/eliminar favorito
+  // Para añadir/eliminar favorito
   const toggleFavorite = async () => {
     const token = localStorage.getItem("token");
 
@@ -78,9 +78,9 @@ export const Single = () => {
           
           <button
             onClick={toggleFavorite}
-            className={`btn ${isFavorite ? "btn-danger" : "btn-primary"} mt-3`}
+            className={`btn ${isFavorite ? "btn-secondary" : "btn-success"} mt-3`}
           >
-            {isFavorite ? "❤️ Eliminar de Favoritos" : "🤍 Añadir a Favoritos"}
+            {isFavorite ? "💔​ Eliminar de Favoritos" : "❤️ Añadir a Favoritos"}
           </button>
         </>
       ) : (

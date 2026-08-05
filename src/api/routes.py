@@ -22,7 +22,7 @@ def signup():
     if not email or not password or not username:
         return jsonify({"msg": "Faltan datos obligatorios"}), 400
 
-    # Comprobar si el usuario ya existe
+    # Esto es para comprobar si el usuario ya existe
     user_exists = User.query.filter_by(email=email).first()
     if user_exists:
         return jsonify({"msg": "El usuario ya existe"}), 400
@@ -65,14 +65,14 @@ def handle_favorite(pokemon_name):
     user_id = get_jwt_identity()
 
     if request.method == "POST":
-        # Lógica para añadir favorito
+        # Añadir favorito
         new_fav = Favorite(user_id=user_id, pokemon_name=pokemon_name)
         db.session.add(new_fav)
         db.session.commit()
         return jsonify({"msg": "Favorito añadido"}), 200
 
     if request.method == "DELETE":
-        # Lógica para eliminar favorito
+        # Eliminar favorito
         fav = Favorite.query.filter_by(
             user_id=user_id, pokemon_name=pokemon_name).first()
         if fav:
@@ -92,9 +92,9 @@ def get_favorites():
     list_favorites = [f.pokemon_name for f in favorites]
     return jsonify(list_favorites), 200
 
+
+
 # RUTA PARA ELIMINAR EL USUARIO
-
-
 @api.route("/user", methods=["DELETE"])
 @jwt_required()
 def delete_user():
