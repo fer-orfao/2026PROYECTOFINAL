@@ -16,8 +16,12 @@ export const Navbar = () => {
 			<div className="container-fluid">
 
 				<Link to="/">
-				
+
 					<span className="navbar-brand mb-0 h1 text-primary">Pokédex</span>
+				</Link>
+
+				<Link to="/edit-profile" className="btn btn-warning ms-2">
+					Edita tu nombre de entrenador
 				</Link>
 
 

@@ -93,7 +93,6 @@ def get_favorites():
     return jsonify(list_favorites), 200
 
 
-
 # RUTA PARA ELIMINAR EL USUARIO
 @api.route("/user", methods=["DELETE"])
 @jwt_required()
@@ -120,3 +119,40 @@ def delete_user():
         db.session.rollback()
         print("ERROR CRÍTICO AL BORRAR USUARIO:", str(e))
         return jsonify({"msg": "Error interno del servidor", "error": str(e)}), 500
+
+
+# RUTA PARA ACTUALIZAR EL NOMBRE DE USUARIO
+
+@api.route("/user", methods=["PUT"])
+@jwt_required()
+def update_user():
+    try:
+        current_user_identity = get_jwt_identity()
+
+        user = User.query.get(current_user_identity)
+        if not user:
+            user = User.query.filter_by(email=current_user_identity).first()
+
+        if not user:
+            return jsonify({"msg": "Usuario no encontrado"}), 404
+
+        body = request.get_json()
+        new_username = body.get("username")
+
+        if not new_username:
+            return jsonify({"msg": "El nuevo nombre de usuario es obligatorio"}), 400
+
+        
+        existing_user = User.query.filter_by(username=new_username).first()
+        if existing_user and existing_user.id != user.id:
+            return jsonify({"msg": "Este nombre de entrenador ya está en uso. Elige otro."}), 400
+
+        user.username = new_username
+        db.session.commit()
+
+        return jsonify({"msg": "Nombre de entrenador actualizado con éxito", "user": user.serialize()}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print("ERROR AL ACTUALIZAR USUARIO:", str(e))
+        return jsonify({"msg": "Este nombre ya está en uso o no está disponible", "error": str(e)}), 400
